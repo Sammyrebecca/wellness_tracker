@@ -38,7 +38,7 @@ In today's fast-paced world, individuals struggle to maintain consistent wellnes
 Built for simplicity and engagement:
 - Responsive React interface (Vite)
 - Habit and mood entry forms  
-- Analytics visualization (using Chart.js or Recharts)  
+- Analytics visualization (using Chart.js)  
 - Authentication UI (Sign Up / Login)  
 - Dashboard overview page  
 
