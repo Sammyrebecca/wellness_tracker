@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: Wellness API
+  version: 0.1.0
+servers:
+  - url: /api
+paths:
+  /auth/register:
+    post:
+      summary: Register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 6 }
+      responses:
+        '201':
+          description: Created
+  /auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200': { description: OK }
+  /me:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+    put:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': { description: OK }
+    delete:
+      security: [{ bearerAuth: [] }]
+      responses:
+        '501': { description: Not Implemented }
+  /entries:
+    get:
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date, mood, sleep, steps, water]
+              properties:
+                date: { type: string, format: date-time }
+                mood: { type: integer, minimum: 1, maximum: 5 }
+                sleep: { type: number, minimum: 0, maximum: 24 }
+                steps: { type: integer, minimum: 0, maximum: 200000 }
+                water: { type: number, minimum: 0, maximum: 15 }
+                notes: { type: string, maxLength: 1000 }
+      responses:
+        '201': { description: Created }
+  /entries/{id}:
+    put:
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/paths/~1entries/post/requestBody/content/application~1json/schema'
+      responses:
+        '200': { description: OK }
+    delete:
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: No Content }
+  /stats:
+    get:
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: window
+          schema: { type: integer, enum: [7, 14, 30] }
+      responses:
+        '200': { description: OK }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

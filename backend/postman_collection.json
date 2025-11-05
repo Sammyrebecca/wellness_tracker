@@ -1,0 +1,71 @@
+{
+  "info": {
+    "name": "Wellness API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Demo\",\n  \"email\": \"demo@example.com\",\n  \"password\": \"password\"\n}" }
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"demo@example.com\",\n  \"password\": \"password\"\n}" }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "pm.environment.set('token', jsonData.token);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Entry",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/entries", "host": ["{{baseUrl}}"], "path": ["api", "entries"] },
+        "body": { "mode": "raw", "raw": "{\n  \"date\": \"{{today}}\",\n  \"mood\": 4,\n  \"sleep\": 7.5,\n  \"steps\": 8000,\n  \"water\": 2.0\n}" }
+      }
+    },
+    {
+      "name": "List Entries",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/entries?limit=10", "host": ["{{baseUrl}}"], "path": ["api", "entries"], "query": [{ "key": "limit", "value": "10" }] }
+      }
+    },
+    {
+      "name": "Stats",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/api/stats?window=7", "host": ["{{baseUrl}}"], "path": ["api", "stats"], "query": [{ "key": "window", "value": "7" }] }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "today", "value": "{{$.now}}" }
+  ]
+}
+
