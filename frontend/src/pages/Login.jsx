@@ -33,7 +33,7 @@ export default function Login() {
         className="absolute inset-0 -z-10 bg-cover bg-center"
         style={{
           backgroundImage:
-            "linear-gradient(135deg, rgba(56,189,248,0.25), rgba(167,139,250,0.25)), url('https://images.pexels.com/photos/2681319/pexels-photo-2681319.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1200&w=1600')",
+            "linear-gradient(135deg, rgba(56,189,248,0.25), rgba(167,139,250,0.25)), url('https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1200&w=1600')",
           filter: 'saturate(1.05)'
         }}
       />
