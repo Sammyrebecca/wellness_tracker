@@ -20,7 +20,7 @@ export default function Layout({ title, children }) {
               <Link key={n.to} to={n.to} className={`text-sm ${loc.pathname === n.to ? 'text-primary font-medium' : 'text-coolGray hover:text-slate-700'}`}>{n.label}</Link>
             ))}
           </nav>
-          <div className="text-sm text-coolGray">{user ? `Hi, ${user.name?.split(' ')[0] || 'Friend'} 👋` : ''}</div>
+          <div className="text-sm text-coolGray">{user ? `Hi, ${user.name?.split(' ')[0] || 'Friend'}` : ''}</div>
           <button onClick={logout} className="text-sm text-rose-500 hover:underline">Logout</button>
         </div>
       </header>

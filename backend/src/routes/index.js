@@ -7,8 +7,9 @@ router.use('/auth', require('./auth.routes'));
 router.use('/', require('./user.routes'));
 router.use('/entries', require('./entry.routes'));
 router.use('/stats', require('./stats.routes'));
+router.use('/insights', require('./insights.routes'));
 
-// Export & other stubs
-router.get('/export', (_req, res) => res.status(501).json({ message: 'TODO: Export not implemented' }));
+// Export
+router.use('/export', require('./export.routes'));
 
 module.exports = router;

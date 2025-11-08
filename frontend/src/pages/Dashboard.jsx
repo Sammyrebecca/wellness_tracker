@@ -12,6 +12,7 @@ export default function Dashboard() {
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [entries, setEntries] = useState([])
+  const [insights, setInsights] = useState([])
   const [loading, setLoading] = useState(true)
   const [windowDays, setWindowDays] = useState(7)
 
@@ -19,10 +20,12 @@ export default function Dashboard() {
     setLoading(true)
     Promise.all([
       api.get('/stats', { params: { window: windowDays } }),
-      api.get('/entries', { params: { limit: windowDays } })
-    ]).then(([s, e]) => {
+      api.get('/entries', { params: { limit: windowDays } }),
+      api.get('/insights', { params: { window: Math.max(14, windowDays) } })
+    ]).then(([s, e, i]) => {
       setStats(s.data)
       setEntries((e.data?.items || []).sort((a,b)=>new Date(a.date)-new Date(b.date)))
+      setInsights(i.data?.tips || [])
     }).finally(()=>setLoading(false))
   }, [windowDays])
 
@@ -32,8 +35,8 @@ export default function Dashboard() {
   const avgWater = stats?.averages?.water ?? 0
   const streak = stats?.streak?.current ?? 0
   const streakTarget = 7
-  const stepGoal = 10000
-  const waterGoal = 3 // liters
+  const stepGoal = user?.preferences?.stepGoal ?? 10000
+  const waterGoal = user?.preferences?.waterGoal ?? 3 // liters
 
   const moodSeries = useMemo(() => entries.map(e => e.mood || 0), [entries])
   const sleepSeries = useMemo(() => entries.map(e => e.sleep || 0), [entries])
@@ -49,16 +52,16 @@ export default function Dashboard() {
           {/* Hero header with background image */}
           <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 text-slate-900 dark:text-slate-100" style={{
             backgroundImage:
-              "linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15)), url('https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=600&w=1200')",
+              "linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15)), url('https://images.unsplash.com/photo-1519821172141-b5d8a4d6f2e7?q=80&w=1200&auto=format&fit=crop')",
             backgroundSize: 'cover', backgroundPosition: 'center'
           }}>
             <div className="backdrop-blur-sm bg-white/40 dark:bg-slate-800/40 rounded-xl p-4 sm:p-6 max-w-3xl">
               <div className="text-sm text-coolGray">{niceDate}</div>
-              <div className="mt-1 font-heading text-2xl sm:text-3xl">Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}! 🌿</div>
+              <div className="mt-1 font-heading text-2xl sm:text-3xl">Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}!</div>
               <div className="mt-2 text-sm sm:text-base text-coolGray">Here’s an overview of your recent wellness trends and progress.</div>
             </div>
             <div className="absolute -right-6 -bottom-6 opacity-70" aria-hidden>
-              <img alt="wellness" className="w-40 sm:w-56 rotate-6" src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=600&auto=format&fit=crop" />
+              <img alt="wellness" className="w-40 sm:w-56 rotate-6" src="https://images.unsplash.com/photo-1514996937319-344454492b37?q=80&w=600&auto=format&fit=crop" />
             </div>
           </div>
 
@@ -75,10 +78,10 @@ export default function Dashboard() {
 
           {/* KPI cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <KPICard label="Mood Avg" value={avgMood.toFixed(1)} icon={<span>🙂</span>} subtext={`${windowDays}d`} />
-            <KPICard label="Sleep Hrs" value={avgSleep.toFixed(1)} icon={<span>🛌</span>} />
-            <KPICard label="Steps" value={(totalSteps/1000).toFixed(1)} suffix="k" icon={<span>👟</span>} subtext={`Goal ${Math.round((totalSteps/(windowDays*stepGoal))*100)}%`} />
-            <KPICard label="Water" value={avgWater.toFixed(1)} suffix="L" icon={<span>💧</span>} subtext={`Goal ${(avgWater/waterGoal*100).toFixed(0)}%`} />
+            <KPICard label="Mood Avg" value={avgMood.toFixed(1)} subtext={`${windowDays}d`} />
+            <KPICard label="Sleep Hrs" value={avgSleep.toFixed(1)} />
+            <KPICard label="Steps" value={(totalSteps/1000).toFixed(1)} suffix="k" subtext={`Goal ${Math.round((totalSteps/(windowDays*stepGoal))*100)}%`} />
+            <KPICard label="Water" value={avgWater.toFixed(1)} suffix="L" subtext={`Goal ${(avgWater/waterGoal*100).toFixed(0)}%`} />
           </div>
 
           {/* Analytics grid */}
@@ -148,7 +151,7 @@ export default function Dashboard() {
                     </div>
                   </>
                 ) : (
-                  <div className="text-coolGray">Keep tracking to unlock insights 🌱</div>
+                  <div className="text-coolGray">Keep tracking to unlock insights.</div>
                 )}
               </div>
             </Card>
@@ -161,12 +164,23 @@ export default function Dashboard() {
                       <div className="font-medium">{new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
                       <div className="text-xs text-coolGray">Sleep {e.sleep}h • {Math.round((e.steps||0)/1000)}k steps • {e.water}L</div>
                     </div>
-                    <div className="text-xl">{['','😞','🙁','😐','🙂','😄'][e.mood||0]}</div>
+                    <div className="text-xs text-coolGray">Mood {e.mood}/5</div>
                   </li>
                 ))}
               </ul>
             </Card>
           </div>
+          {/* Recommendations */}
+          <Card>
+            <div className="font-medium mb-2">Recommendations</div>
+            {insights.length > 0 ? (
+              <ul className="list-disc pl-5 space-y-1 text-sm text-slate-700 dark:text-slate-200">
+                {insights.map((t, i) => <li key={i}>{t}</li>)}
+              </ul>
+            ) : (
+              <div className="text-coolGray text-sm">Personalized suggestions will appear as you track more.</div>
+            )}
+          </Card>
         </div>
       )}
     </Layout>

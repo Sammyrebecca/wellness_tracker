@@ -5,7 +5,10 @@ const PreferencesSchema = new mongoose.Schema(
   {
     focusArea: { type: String },
     reminderTime: { type: String }, // HH:mm
-    darkMode: { type: Boolean, default: false }
+    darkMode: { type: Boolean, default: false },
+    stepGoal: { type: Number, min: 0, max: 200000, default: 10000 },
+    waterGoal: { type: Number, min: 0, max: 15, default: 3 },
+    sleepGoal: { type: Number, min: 0, max: 24, default: 7 }
   },
   { _id: false }
 );
@@ -35,4 +38,3 @@ UserSchema.methods.toJSON = function () {
 };
 
 module.exports = mongoose.model('User', UserSchema);
-

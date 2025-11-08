@@ -6,7 +6,10 @@ const updateSchema = Joi.object({
   preferences: Joi.object({
     focusArea: Joi.string().optional(),
     reminderTime: Joi.string().pattern(/^\d{2}:\d{2}$/).optional(),
-    darkMode: Joi.boolean().optional()
+    darkMode: Joi.boolean().optional(),
+    stepGoal: Joi.number().integer().min(0).max(200000).optional(),
+    waterGoal: Joi.number().min(0).max(15).optional(),
+    sleepGoal: Joi.number().min(0).max(24).optional()
   }).optional()
 });
 
@@ -32,4 +35,3 @@ async function deleteAccount(_req, res) {
 }
 
 module.exports = { me, updateProfile, deleteAccount };
-

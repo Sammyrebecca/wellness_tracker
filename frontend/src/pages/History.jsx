@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Layout from '../components/Layout'
 import Card from '../components/Card'
 import api from '../lib/api'
@@ -27,7 +27,6 @@ export default function History() {
   useEffect(() => { fetchItems(1) }, [])
 
   const pages = Math.max(1, Math.ceil(total / limit))
-  const moodEmojis = ['', '😞', '🙁', '😐', '🙂', '😄']
   const [error, setError] = useState('')
 
   const remove = async (id) => {
@@ -43,6 +42,17 @@ export default function History() {
   return (
     <Layout title="History">
       <div className="grid gap-4">
+        <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 text-slate-900 dark:text-slate-100" style={{
+          backgroundImage:
+            "linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15)), url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1200&auto=format&fit=crop')",
+          backgroundSize: 'cover', backgroundPosition: 'center'
+        }}>
+          <div className="backdrop-blur-sm bg-white/40 dark:bg-slate-800/40 rounded-xl p-4 sm:p-6 max-w-3xl">
+            <div className="font-heading text-2xl">History</div>
+            <div className="text-sm text-coolGray mt-1">Browse and manage your previous check-ins. Filter by date range to focus on a period.</div>
+          </div>
+        </div>
+
         <Card>
           <form className="grid gap-4 sm:grid-cols-4 items-end" onSubmit={e=>{e.preventDefault(); fetchItems(1) }}>
             <label className="block">
@@ -58,6 +68,26 @@ export default function History() {
           </form>
         </Card>
         <Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <div className="text-sm text-coolGray">Entries</div>
+              <div className="font-numeric text-xl font-semibold">{items.length}</div>
+            </div>
+            <div>
+              <div className="text-sm text-coolGray">Avg Mood</div>
+              <div className="font-numeric text-xl font-semibold">{(items.reduce((a,b)=>a+(b.mood||0),0)/Math.max(items.length,1)).toFixed(1)}</div>
+            </div>
+            <div>
+              <div className="text-sm text-coolGray">Avg Sleep</div>
+              <div className="font-numeric text-xl font-semibold">{(items.reduce((a,b)=>a+(b.sleep||0),0)/Math.max(items.length,1)).toFixed(1)}h</div>
+            </div>
+            <div>
+              <div className="text-sm text-coolGray">Total Steps</div>
+              <div className="font-numeric text-xl font-semibold">{items.reduce((a,b)=>a+(b.steps||0),0).toLocaleString()}</div>
+            </div>
+          </div>
+        </Card>
+        <Card>
           {loading ? 'Loading…' : (
             <>
               {error && <div className="text-rose-500 text-sm mb-3">{error}</div>}
@@ -69,7 +99,7 @@ export default function History() {
                       <div className="text-sm text-coolGray">Sleep {e.sleep}h • Steps {e.steps} • Water {e.water}L</div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl">{moodEmojis[e.mood]}</div>
+                      <div className="text-sm text-coolGray">Mood {e.mood}/5</div>
                       <button className="btn-pill border border-rose-300 text-rose-500" onClick={()=>remove(e._id || e.id)}>Delete</button>
                     </div>
                   </li>
