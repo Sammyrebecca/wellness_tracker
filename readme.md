@@ -60,7 +60,7 @@ Designed for scalability and security:
 
 | Layer | Technology |
 |-------|-------------|
-| Frontend | React (Vite), HTML, CSS, Bootstrap |
+| Frontend | React (Vite), Tailwind CSS |
 | Backend | Node.js, Express.js, CommonJS |
 | Database | MongoDB (Mongoose ORM) |
 | Auth | JWT (JSON Web Token) |
