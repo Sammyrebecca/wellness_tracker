@@ -44,7 +44,7 @@ export default function History() {
       <div className="grid gap-4">
         <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 text-slate-900 dark:text-slate-100" style={{
           backgroundImage:
-            "linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15)), url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1200&auto=format&fit=crop')",
+            "linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15)), url('/hero-history.svg')",
           backgroundSize: 'cover', backgroundPosition: 'center'
         }}>
           <div className="backdrop-blur-sm bg-white/40 dark:bg-slate-800/40 rounded-xl p-4 sm:p-6 max-w-3xl">
