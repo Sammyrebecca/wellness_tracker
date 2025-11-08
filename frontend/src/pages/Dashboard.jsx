@@ -1,53 +1,94 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Layout from '../components/Layout'
 import KPICard from '../components/KPICard'
 import Card from '../components/Card'
 import ProgressRing from '../components/ProgressRing'
+import Sparkline from '../components/Sparkline'
+import Donut from '../components/Donut'
 import api from '../lib/api'
+import { useAuth } from '../context/AuthContext'
 
 export default function Dashboard() {
+  const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
+  const [windowDays, setWindowDays] = useState(7)
 
   useEffect(() => {
+    setLoading(true)
     Promise.all([
-      api.get('/stats', { params: { window: 7 } }),
-      api.get('/entries', { params: { limit: 7 } })
+      api.get('/stats', { params: { window: windowDays } }),
+      api.get('/entries', { params: { limit: windowDays } })
     ]).then(([s, e]) => {
       setStats(s.data)
-      setEntries(e.data?.items || [])
+      setEntries((e.data?.items || []).sort((a,b)=>new Date(a.date)-new Date(b.date)))
     }).finally(()=>setLoading(false))
-  }, [])
+  }, [windowDays])
 
   const avgMood = stats?.averages?.mood ?? 0
   const avgSleep = stats?.averages?.sleep ?? 0
   const totalSteps = stats?.totalSteps ?? 0
-  const totalWater = stats?.averages?.water ?? 0
+  const avgWater = stats?.averages?.water ?? 0
   const streak = stats?.streak?.current ?? 0
   const streakTarget = 7
+  const stepGoal = 10000
+  const waterGoal = 3 // liters
+
+  const moodSeries = useMemo(() => entries.map(e => e.mood || 0), [entries])
+  const sleepSeries = useMemo(() => entries.map(e => e.sleep || 0), [entries])
+  const stepsSeries = useMemo(() => entries.map(e => e.steps || 0), [entries])
+
+  const today = new Date()
+  const niceDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
 
   return (
     <Layout title="Dashboard">
       {loading ? <div>Loading…</div> : (
         <div className="grid gap-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <KPICard label="Mood Avg" value={avgMood.toFixed(1)} />
-            <KPICard label="Sleep Hrs" value={avgSleep.toFixed(1)} />
-            <KPICard label="Steps" value={(totalSteps/1000).toFixed(1)} suffix="k" />
-            <KPICard label="Water" value={totalWater.toFixed(1)} suffix="L" />
+          {/* Hero header with background image */}
+          <div className="relative overflow-hidden rounded-2xl p-6 sm:p-8 text-slate-900 dark:text-slate-100" style={{
+            backgroundImage:
+              "linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15)), url('https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=600&w=1200')",
+            backgroundSize: 'cover', backgroundPosition: 'center'
+          }}>
+            <div className="backdrop-blur-sm bg-white/40 dark:bg-slate-800/40 rounded-xl p-4 sm:p-6 max-w-3xl">
+              <div className="text-sm text-coolGray">{niceDate}</div>
+              <div className="mt-1 font-heading text-2xl sm:text-3xl">Welcome back{user?.name ? `, ${user.name.split(' ')[0]}` : ''}! 🌿</div>
+              <div className="mt-2 text-sm sm:text-base text-coolGray">Here’s an overview of your recent wellness trends and progress.</div>
+            </div>
+            <div className="absolute -right-6 -bottom-6 opacity-70" aria-hidden>
+              <img alt="wellness" className="w-40 sm:w-56 rotate-6" src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=600&auto=format&fit=crop" />
+            </div>
           </div>
+
+          {/* Time window selector */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-coolGray">Time window</div>
+            <div className="flex gap-2">
+              {[7, 14, 30].map(w => (
+                <button key={w} onClick={()=>setWindowDays(w)}
+                  className={`btn-pill border ${windowDays===w? 'border-sky-300 text-sky-600' : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'}`}>{w}d</button>
+              ))}
+            </div>
+          </div>
+
+          {/* KPI cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <KPICard label="Mood Avg" value={avgMood.toFixed(1)} icon={<span>🙂</span>} subtext={`${windowDays}d`} />
+            <KPICard label="Sleep Hrs" value={avgSleep.toFixed(1)} icon={<span>🛌</span>} />
+            <KPICard label="Steps" value={(totalSteps/1000).toFixed(1)} suffix="k" icon={<span>👟</span>} subtext={`Goal ${Math.round((totalSteps/(windowDays*stepGoal))*100)}%`} />
+            <KPICard label="Water" value={avgWater.toFixed(1)} suffix="L" icon={<span>💧</span>} subtext={`Goal ${(avgWater/waterGoal*100).toFixed(0)}%`} />
+          </div>
+
+          {/* Analytics grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="col-span-2">
               <div className="flex items-center justify-between mb-3">
-                <div className="font-medium">Last 7 days</div>
-                <div className="text-sm text-coolGray">Mood trend</div>
+                <div className="font-medium">Mood trend</div>
+                <div className="text-sm text-coolGray">Last {windowDays} days</div>
               </div>
-              <div className="h-36 flex items-end gap-2">
-                {entries.map((it, i) => (
-                  <div key={i} title={new Date(it.date).toLocaleDateString()} className="flex-1 bg-sky-200 rounded" style={{ height: `${(it.mood||0)/5*100}%` }} />
-                ))}
-              </div>
+              <Sparkline data={moodSeries} width={620} height={120} stroke="#38BDF8" />
             </Card>
             <Card className="flex items-center justify-between">
               <div>
@@ -57,19 +98,75 @@ export default function Dashboard() {
               <ProgressRing size={120} stroke={10} progress={Math.min(1, streak/streakTarget)} />
             </Card>
           </div>
-          <Card>
-            <div className="text-sm text-coolGray">Insights</div>
-            <div className="mt-2">
-              {stats?.trend ? (
-                <>
-                  <div>Mood {stats.trend.moodDelta >= 0 ? '+' : ''}{stats.trend.moodDelta} vs prior {7}-day window</div>
-                  <div>Sleep {stats.trend.sleepDelta >= 0 ? '+' : ''}{stats.trend.sleepDelta}h vs prior</div>
-                  <div>Steps {stats.trend.stepsDelta >= 0 ? '+' : ''}{stats.trend.stepsDelta} vs prior</div>
-                  <div>Water {stats.trend.waterDelta >= 0 ? '+' : ''}{stats.trend.waterDelta}L vs prior</div>
-                </>
-              ) : 'Keep tracking to unlock insights 🌱'}
-            </div>
-          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-medium">Sleep trend</div>
+                <div className="text-sm text-coolGray">Avg {avgSleep.toFixed(1)}h</div>
+              </div>
+              <Sparkline data={sleepSeries} width={620} height={120} stroke="#A78BFA" />
+            </Card>
+            <Card className="flex items-center justify-between">
+              <div>
+                <div className="font-medium mb-2">Steps</div>
+                <div className="text-coolGray text-sm">Goal {stepGoal.toLocaleString()}</div>
+              </div>
+              <Donut size={140} stroke={12} value={(stepsSeries[stepsSeries.length-1]||0)/stepGoal} color="#38BDF8" label="Today" />
+            </Card>
+            <Card className="flex items-center justify-between">
+              <div>
+                <div className="font-medium mb-2">Hydration</div>
+                <div className="text-coolGray text-sm">Avg {avgWater.toFixed(1)}L</div>
+              </div>
+              <Donut size={140} stroke={12} value={avgWater / waterGoal} color="#10B981" label={`${waterGoal}L goal`} />
+            </Card>
+          </div>
+
+          {/* Insights & recent activity */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="col-span-2">
+              <div className="font-medium mb-2">Insights</div>
+              <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                {stats?.trend ? (
+                  <>
+                    <div className="glass-card p-4">
+                      <div className="text-coolGray">Mood vs prior</div>
+                      <div className="font-numeric text-lg">{stats.trend.moodDelta >= 0 ? '+' : ''}{stats.trend.moodDelta}</div>
+                    </div>
+                    <div className="glass-card p-4">
+                      <div className="text-coolGray">Sleep vs prior</div>
+                      <div className="font-numeric text-lg">{stats.trend.sleepDelta >= 0 ? '+' : ''}{stats.trend.sleepDelta}h</div>
+                    </div>
+                    <div className="glass-card p-4">
+                      <div className="text-coolGray">Steps vs prior</div>
+                      <div className="font-numeric text-lg">{stats.trend.stepsDelta >= 0 ? '+' : ''}{stats.trend.stepsDelta}</div>
+                    </div>
+                    <div className="glass-card p-4">
+                      <div className="text-coolGray">Water vs prior</div>
+                      <div className="font-numeric text-lg">{stats.trend.waterDelta >= 0 ? '+' : ''}{stats.trend.waterDelta}L</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-coolGray">Keep tracking to unlock insights 🌱</div>
+                )}
+              </div>
+            </Card>
+            <Card>
+              <div className="font-medium mb-2">Recent check-ins</div>
+              <ul className="divide-y divide-slate-200 dark:divide-slate-700">
+                {entries.slice(-5).reverse().map((e, i) => (
+                  <li key={i} className="py-2 flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{new Date(e.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                      <div className="text-xs text-coolGray">Sleep {e.sleep}h • {Math.round((e.steps||0)/1000)}k steps • {e.water}L</div>
+                    </div>
+                    <div className="text-xl">{['','😞','🙁','😐','🙂','😄'][e.mood||0]}</div>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </div>
         </div>
       )}
     </Layout>
