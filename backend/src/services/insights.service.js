@@ -54,4 +54,3 @@ async function getInsights(userId, window = 14) {
 }
 
 module.exports = { getInsights };
-

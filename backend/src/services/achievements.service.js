@@ -11,7 +11,7 @@ async function getAchievements(userId) {
       { $group: { _id: null, count: { $sum: 1 }, totalSteps: { $sum: '$steps' }, avgWater: { $avg: '$water' } } }
     ]),
     Entry.findOne({ userId }).sort({ steps: -1 }).select('steps date'),
-    (async () => {
+    (async() => {
       const end = startOfDayUTC(new Date());
       const start = addDaysUTC(end, -29);
       const items = await Entry.find({ userId, date: { $gte: start, $lte: end } }).sort({ date: 1 }).select('sleep mood water steps date');
@@ -40,4 +40,3 @@ async function getAchievements(userId) {
 }
 
 module.exports = { getAchievements };
-

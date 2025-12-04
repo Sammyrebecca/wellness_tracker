@@ -46,4 +46,3 @@ async function recomputeStreaks(userId) {
 }
 
 module.exports = { computeStreaks, recomputeStreaks };
-

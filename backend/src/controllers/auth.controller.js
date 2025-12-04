@@ -41,4 +41,3 @@ async function handleLogout(_req, res) {
 }
 
 module.exports = { handleRegister, handleLogin, handleLogout };
-

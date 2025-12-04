@@ -6,16 +6,16 @@ const { connectDB } = require('../../config/db');
 const User = require('../../models/User');
 
 describe('Auth flow', () => {
-  beforeAll(async () => {
+  beforeAll(async() => {
     await connectDB();
     await User.deleteMany({});
   });
 
-  afterAll(async () => {
+  afterAll(async() => {
     await mongoose.connection.close();
   });
 
-  it('registers and logs in', async () => {
+  it('registers and logs in', async() => {
     const reg = await request(app).post('/api/auth/register').send({ name: 'T', email: 't@example.com', password: 'secret1' });
     expect(reg.status).toBe(201);
     expect(reg.body.token).toBeTruthy();
@@ -25,4 +25,3 @@ describe('Auth flow', () => {
     expect(login.body.token).toBeTruthy();
   });
 });
-

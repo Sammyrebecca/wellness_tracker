@@ -6,4 +6,3 @@ const { auth } = require('../middlewares/auth');
 router.get('/', auth, exportCSV);
 
 module.exports = router;
-

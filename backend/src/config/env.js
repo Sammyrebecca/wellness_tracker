@@ -21,4 +21,3 @@ function getEnv() {
 }
 
 module.exports = { getEnv };
-

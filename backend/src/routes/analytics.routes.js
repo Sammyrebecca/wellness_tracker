@@ -6,4 +6,3 @@ const { auth } = require('../middlewares/auth');
 router.get('/correlation', auth, correlation);
 
 module.exports = router;
-

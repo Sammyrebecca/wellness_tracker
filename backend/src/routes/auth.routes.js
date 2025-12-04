@@ -8,4 +8,3 @@ router.post('/login', authLimiter, handleLogin);
 router.post('/logout', handleLogout);
 
 module.exports = router;
-

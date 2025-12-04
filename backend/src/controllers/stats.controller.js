@@ -15,4 +15,3 @@ async function stats(req, res, next) {
 }
 
 module.exports = { stats };
-

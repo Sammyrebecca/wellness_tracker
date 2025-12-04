@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const { correlations } = require('../services/correlation.service');
 
-const querySchema = Joi.object({ window: Joi.number().valid(7,14,30).optional() });
+const querySchema = Joi.object({ window: Joi.number().valid(7, 14, 30).optional() });
 
 async function correlation(req, res, next) {
   try {
@@ -13,4 +13,3 @@ async function correlation(req, res, next) {
 }
 
 module.exports = { correlation };
-

@@ -37,4 +37,3 @@ async function setCurrentStreak(id, streak) {
 }
 
 module.exports = { register, authenticate, getById, updateMe, setCurrentStreak };
-

@@ -8,18 +8,39 @@ const EDIT_WINDOW_DAYS = 7;
 const entrySchema = Joi.object({
   date: Joi.string().isoDate().required(),
   mood: Joi.number().integer().min(1).max(5).required(),
+  moodEmoji: Joi.string().max(10).optional(), // emoji representation
   sleep: Joi.number().min(0).max(24).required(),
   steps: Joi.number().integer().min(0).max(200000).required(),
   water: Joi.number().min(0).max(15).required(),
-  notes: Joi.string().max(1000).allow('', null)
+  notes: Joi.string().max(1000).allow('', null),
+  journal: Joi.string().max(5000).allow('', null), // detailed mood journal
+  tags: Joi.array().items(Joi.string()).optional() // user-defined tags
 });
 
+// Mood emoji mapping helper
+const moodEmojiMap = {
+  1: '😞',
+  2: '😟',
+  3: '😐',
+  4: '😊',
+  5: '😄'
+};
+
 async function createEntry(userId, payload) {
-  const { value, error } = entrySchema.validate(payload, { abortEarly: false, stripUnknown: true });
+  const { value, error } = entrySchema.validate(payload, {
+    abortEarly: false,
+    stripUnknown: true
+  });
   if (error) {
     error.isJoi = true;
     throw error;
   }
+
+  // Auto-assign emoji if not provided
+  if (!value.moodEmoji && value.mood) {
+    value.moodEmoji = moodEmojiMap[value.mood];
+  }
+
   const date = startOfDayUTC(new Date(value.date));
   try {
     const entry = await Entry.create({ ...value, date, userId });
@@ -38,7 +59,7 @@ async function createEntry(userId, payload) {
 function assertWithinEditWindow(entryDate) {
   const now = new Date();
   const days = daysBetweenUTC(entryDate, now);
-  if (days > (EDIT_WINDOW_DAYS - 1)) {
+  if (days > EDIT_WINDOW_DAYS - 1) {
     const err = new Error('Edit window exceeded (7 days)');
     err.code = 'FORBIDDEN';
     throw err;
@@ -55,11 +76,20 @@ async function updateEntry(userId, id, payload) {
   assertWithinEditWindow(entry.date);
 
   // Validate updates; allow date change but normalize
-  const { value, error } = entrySchema.validate(payload, { abortEarly: false, stripUnknown: true });
+  const { value, error } = entrySchema.validate(payload, {
+    abortEarly: false,
+    stripUnknown: true
+  });
   if (error) {
     error.isJoi = true;
     throw error;
   }
+
+  // Update emoji if mood changed
+  if (value.mood && !value.moodEmoji) {
+    value.moodEmoji = moodEmojiMap[value.mood];
+  }
+
   const date = startOfDayUTC(new Date(value.date));
   entry.set({ ...value, date });
   await entry.save();
@@ -107,4 +137,3 @@ async function listEntries(userId, { from, to, page = 1, limit = 20 }) {
 }
 
 module.exports = { createEntry, updateEntry, deleteEntry, listEntries };
-

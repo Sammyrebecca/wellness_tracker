@@ -49,4 +49,3 @@ async function getStats(userId, window = 7) {
 }
 
 module.exports = { getStats };
-

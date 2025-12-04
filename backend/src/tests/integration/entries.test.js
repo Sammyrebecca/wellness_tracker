@@ -8,7 +8,7 @@ const Entry = require('../../models/Entry');
 
 describe('Entries and stats', () => {
   let token;
-  beforeAll(async () => {
+  beforeAll(async() => {
     await connectDB();
     await User.deleteMany({});
     await Entry.deleteMany({});
@@ -16,11 +16,11 @@ describe('Entries and stats', () => {
     token = reg.body.token;
   });
 
-  afterAll(async () => {
+  afterAll(async() => {
     await mongoose.connection.close();
   });
 
-  it('creates single entry per day and computes stats', async () => {
+  it('creates single entry per day and computes stats', async() => {
     const body = { date: new Date().toISOString(), mood: 4, sleep: 7.5, steps: 8000, water: 2.2 };
     const r1 = await request(app).post('/api/entries').set('Authorization', `Bearer ${token}`).send(body);
     expect(r1.status).toBe(201);
@@ -33,4 +33,3 @@ describe('Entries and stats', () => {
     expect(stats.body.averages).toBeTruthy();
   });
 });
-

@@ -2,7 +2,7 @@ const { verifyToken } = require('../services/token.service');
 const { errorResponse } = require('../utils/responses');
 
 function auth(req, res, next) {
-  const header = req.headers['authorization'] || '';
+  const header = req.headers.authorization || '';
   const [type, token] = header.split(' ');
   if (type !== 'Bearer' || !token) {
     return errorResponse(res, 401, 'UNAUTHORIZED', 'Missing or invalid Authorization header');
@@ -17,4 +17,3 @@ function auth(req, res, next) {
 }
 
 module.exports = { auth };
-

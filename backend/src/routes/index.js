@@ -10,6 +10,8 @@ router.use('/stats', require('./stats.routes'));
 router.use('/insights', require('./insights.routes'));
 router.use('/achievements', require('./achievements.routes'));
 router.use('/analytics', require('./analytics.routes'));
+router.use('/reminders', require('./reminders.routes'));
+router.use('/sync', require('./sync.routes'));
 
 // Export
 router.use('/export', require('./export.routes'));

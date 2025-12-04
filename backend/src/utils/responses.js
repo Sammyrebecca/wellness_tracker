@@ -3,4 +3,3 @@ function errorResponse(res, status, code, message, details) {
 }
 
 module.exports = { errorResponse };
-

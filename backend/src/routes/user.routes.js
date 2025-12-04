@@ -8,4 +8,3 @@ router.put('/me', auth, updateProfile);
 router.delete('/me', auth, deleteAccount); // 501 for now
 
 module.exports = router;
-
