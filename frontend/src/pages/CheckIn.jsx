@@ -5,8 +5,6 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import api from "../lib/api";
 
-
-
 const moodLabels = {
   1: "Very low",
   2: "Low",

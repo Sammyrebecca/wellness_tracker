@@ -71,7 +71,7 @@ export default function Layout({ title, children }) {
               </nav>
             )}
             <div className="text-sm text-coolGray hidden sm:block">
-              {user ? `Hi, ${user.name?.split(' ')[0] || 'Friend'}` : ''}
+              {user ? `Hi, ${user.name?.split(" ")[0] || "Friend"}` : ""}
             </div>
             <button
               onClick={logout}
